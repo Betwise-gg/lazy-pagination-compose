@@ -29,5 +29,5 @@ dependencyResolutionManagement {
     }
 }
 
-include(":sample:composeApp")
+//include(":sample:composeApp")
 include(":lazy-pagination-compose")
