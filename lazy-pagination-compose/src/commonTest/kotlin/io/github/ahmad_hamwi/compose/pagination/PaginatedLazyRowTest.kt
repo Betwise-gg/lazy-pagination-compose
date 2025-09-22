@@ -40,6 +40,11 @@ class PaginatedLazyRowTest : PaginatedLazyScrollableTest() {
             firstPageEmptyIndicator = {
                 Box(modifier = Modifier.testTag(FIRST_PAGE_EMPTY_INDICATOR_TAG))
             },
+            newPageEmptyIndicator = {
+                Box(modifier = Modifier.testTag(NEW_PAGE_EMPTY_INDICATOR_TAG)) {
+                    Text("No more results")
+                }
+            },
         ) {
             itemsIndexed(
                 items = paginationState.allItems!!,
@@ -84,12 +89,28 @@ class PaginatedLazyRowTest : PaginatedLazyScrollableTest() {
         super.scrollingDownTheListWillShowErrorAndTriggerPageRequest()
 
     @Test
+    override fun scrollingDownTheListWillShowEmptyAndTriggerPageRequest() =
+        super.scrollingDownTheListWillShowEmptyAndTriggerPageRequest()
+
+    @Test
     override fun appendingLastPagePreventsLoadingAndNewPageRequests() =
         super.appendingLastPagePreventsLoadingAndNewPageRequests()
 
     @Test
     override fun retryFirstFailedRequestWouldRequestAgainTheSamePageAndShowProgress() =
         super.retryFirstFailedRequestWouldRequestAgainTheSamePageAndShowProgress()
+
+    @Test
+    override fun retryingFirstFailedRequestTwiceWouldRequestAgainOnlyOnce() =
+        super.retryingFirstFailedRequestTwiceWouldRequestAgainOnlyOnce()
+
+    @Test
+    override fun failRetrySuccessThenNextPageFailRetrySuccess() =
+        super.failRetrySuccessThenNextPageFailRetrySuccess()
+
+    @Test
+    override fun invokingRetryOnLoadedStateCausesAnIllegalArgumentException() =
+        super.invokingRetryOnLoadedStateCausesAnIllegalArgumentException()
 
     @Test
     override fun retryNewPageFailedRequestWouldRequestAgainTheSamePageAndShowProgress() =

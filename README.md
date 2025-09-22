@@ -3,9 +3,8 @@
 <p align="center">
     <a href="https://opensource.org/licenses/MIT"><img alt="API" src="https://img.shields.io/badge/License-MIT-blue.svg"/></a>
     <img alt="API" src="https://img.shields.io/maven-central/v/io.github.ahmad-hamwi/lazy-pagination-compose"/>
-    <a href="http://kotlinlang.org"><img alt="API" src="https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin"/></a>
+    <a href="http://kotlinlang.org"><img alt="API" src="https://img.shields.io/badge/kotlin-2.1.20-blue.svg?logo=kotlin"/></a>
     <img alt="API" src="https://github.com/Ahmad-Hamwi/lazy-pagination-compose/actions/workflows/unit-test.yml/badge.svg"/>
-    <img alt="API" src="https://github.com/Ahmad-Hamwi/lazy-pagination-compose/actions/workflows/deploy-central.yml/badge.svg"/>
     <br/>
     <br/>
     <img alt="API" src="https://img.shields.io/badge/-Android-gray.svg?style=flat"/>
@@ -64,6 +63,8 @@ PaginatedLazyColumn(
         ... onRetry = { paginationState.retryLastFailedRequest() } ...
     },
     newPageErrorIndicator = { e -> ... },
+    firstPageEmptyIndicator = { ... },
+    newPageEmptyIndicator = { ... },
     // The rest of LazyColumn params
 ) {
     itemsIndexed(
@@ -99,6 +100,8 @@ PaginatedLazyRow(
         ... onRetry = { paginationState.retryLastFailedRequest() } ...
     },
     newPageErrorIndicator = { e -> ... },
+    firstPageEmptyIndicator = { ... },
+    newPageEmptyIndicator = { ... },
     ... // The rest of LazyRow params
 ) {
     itemsIndexed(
@@ -134,6 +137,8 @@ PaginatedLazyVerticalGrid(
         ... onRetry = { paginationState.retryLastFailedRequest() } ...
     },
     newPageErrorIndicator = { e -> ... },
+    firstPageEmptyIndicator = { ... },
+    newPageEmptyIndicator = { ... },
     ... // The rest of LazyVerticalGrid params
 ) {
     itemsIndexed(
@@ -169,6 +174,8 @@ PaginatedLazyHorizontalGrid(
         ... onRetry = { paginationState.retryLastFailedRequest() } ...
     },
     newPageErrorIndicator = { e -> ... },
+    firstPageEmptyIndicator = { ... },
+    newPageEmptyIndicator = { ... },
     ... // The rest of LazyHorizontalGrid params
 ) {
     itemsIndexed(
@@ -178,6 +185,8 @@ PaginatedLazyHorizontalGrid(
     }
 }
 ```
+
+## More supported composables: `PaginatedLazyVerticalGrid` and `PaginatedLazyHorizontalGrid` ##
 
 <details>
     <summary> 
@@ -276,7 +285,7 @@ allprojects {
 
 ```toml
 [versions]
-lazy-pagination-compose = "1.3.7"
+lazy-pagination-compose = "1.7.1"
 
 [libraries]
 lazyPaginationCompose = { module = "io.github.ahmad-hamwi:lazy-pagination-compose", version.ref = "lazy-pagination-compose" }
@@ -382,6 +391,8 @@ fun Content() {
         newPageProgressIndicator = { ... },
         firstPageErrorIndicator = { e -> ... },
         newPageErrorIndicator = { e -> ... },
+        firstPageEmptyIndicator = { ... },
+        newPageEmptyIndicator = { ... },
     ) {
         itemsIndexed(
             paginationState.allItems!!, // safe to access here
@@ -412,6 +423,7 @@ This library is made to help other developers out in their app developments, fee
 # Honorable Mentions #
 Thank you for the following contributors:
 - [Tomislav Mladenov](https://github.com/TomislavMladenov): For adding support to the JS target.
+- [Siarhei Luskanau](https://github.com/siarhei-luskanau): For keeping project dependencies up-to-date!
 
 # Support #
 You can show support by either contributing to the repository or by buying me a cup of coffee!

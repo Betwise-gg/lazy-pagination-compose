@@ -33,21 +33,21 @@ jobs:
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@v3
-    - uses: actions/cache@v3
+      uses: gradle/actions/wrapper-validation@v4
+    - uses: actions/cache@v4
       with:
         path: |
           ~/.konan
         key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
     - name: Import GPG key
-      uses: crazy-max/ghaction-import-gpg@v5
+      uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
         passphrase: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -58,6 +58,6 @@ jobs:
         GRADLE_PUBLISH_COMMAND: ${{ matrix.target }}
         OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
         OSSRH_GPG_SECRET_KEY_ID: ${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-      run: ./gradlew $GRADLE_PUBLISH_COMMAND closeSonatypeStagingRepository releaseSonatypeStagingRepository -Psigning.gnupg.passphrase=$OSSRH_GPG_SECRET_KEY_PASSWORD -Psigning.gnupg.keyName=$OSSRH_GPG_SECRET_KEY_ID -PsonatypeUsername=$OSSRH_USERNAME -PsonatypePassword=$OSSRH_PASSWORD
+        CENTRAL_PUBLISHER_PORTAL_USERNAME: ${{ secrets.CENTRAL_PUBLISHER_PORTAL_USERNAME }}
+        CENTRAL_PUBLISHER_PORTAL_PASSWORD: ${{ secrets.CENTRAL_PUBLISHER_PORTAL_PASSWORD }}
+      run: ./gradlew $GRADLE_PUBLISH_COMMAND closeSonatypeStagingRepository releaseSonatypeStagingRepository -Psigning.gnupg.passphrase=$OSSRH_GPG_SECRET_KEY_PASSWORD -Psigning.gnupg.keyName=$OSSRH_GPG_SECRET_KEY_ID -PsonatypeUsername=$CENTRAL_PUBLISHER_PORTAL_USERNAME -PsonatypePassword=$CENTRAL_PUBLISHER_PORTAL_PASSWORD

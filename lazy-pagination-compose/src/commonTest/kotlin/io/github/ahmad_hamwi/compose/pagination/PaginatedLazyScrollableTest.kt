@@ -7,8 +7,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.test.runComposeUiTest
+import assertk.assertFailure
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 
 @OptIn(ExperimentalTestApi::class)
 abstract class PaginatedLazyScrollableTest {
@@ -21,6 +23,7 @@ abstract class PaginatedLazyScrollableTest {
         const val ITEM_CONTENT_TAG = "itemContent"
         const val NEW_PAGE_PROGRESS_INDICATOR_TAG = "newPageProgressIndicator"
         const val NEW_PAGE_ERROR_INDICATOR_TAG = "newPageErrorIndicator"
+        const val NEW_PAGE_EMPTY_INDICATOR_TAG = "newPageEmptyIndicator"
     }
 
     @Suppress("TestFunctionName")
@@ -145,6 +148,26 @@ abstract class PaginatedLazyScrollableTest {
         assertThat(pageKeysCalled).isEqualTo(listOf(1))
     }
 
+    open fun scrollingDownTheListWillShowEmptyAndTriggerPageRequest() = runComposeUiTest {
+        val pageKeysCalled = mutableListOf<Int>()
+        val state = defaultPaginationState { pageKey ->
+            pageKeysCalled += pageKey
+        }
+
+        setContent { SutComposable(state) }
+
+        state.appendPage(items = listOf("", "", "", "", ""), nextPageKey = 2)
+        onNodeWithTag(LAZY_SCROLLABLE_TAG).performScrollToIndex(4)
+        waitForIdle()
+
+        state.appendPage(items = listOf("", "", "", "", ""), nextPageKey = -1, isLastPage = true)
+        onNodeWithTag(LAZY_SCROLLABLE_TAG).performScrollToIndex(10)
+        waitForIdle()
+
+        onNodeWithTag(NEW_PAGE_EMPTY_INDICATOR_TAG).assertExists()
+        onNodeWithText("No more results").assertExists()
+        assertThat(pageKeysCalled).isEqualTo(listOf(1, 2))
+    }
 
     open fun appendingLastPagePreventsLoadingAndNewPageRequests() = runComposeUiTest {
         val pageKeysCalled = mutableListOf<Int>()
@@ -170,6 +193,55 @@ abstract class PaginatedLazyScrollableTest {
 
             onNodeWithTag(FIRST_PAGE_PROGRESS_INDICATOR_TAG).assertExists()
             assertThat(pageKeysCalled).isEqualTo(listOf(1, 1))
+        }
+
+    open fun retryingFirstFailedRequestTwiceWouldRequestAgainOnlyOnce() =
+        runComposeUiTest {
+            val pageKeysCalled = mutableListOf<Int>()
+
+            val state = defaultPaginationState { pageKeysCalled += it }
+
+            setContent { SutComposable(state) }
+            state.setError(Exception())
+            state.retryLastFailedRequest()
+            state.retryLastFailedRequest() // second time (for any reason)
+
+            assertThat(pageKeysCalled).isEqualTo(listOf(1, 1))
+        }
+
+    open fun failRetrySuccessThenNextPageFailRetrySuccess() =
+        runComposeUiTest {
+            val pageKeysCalled = mutableListOf<Int>()
+
+            val state = defaultPaginationState { pageKeysCalled += it }
+
+            setContent { SutComposable(state) }
+
+            state.setError(Exception()) // First page error
+            state.retryLastFailedRequest() // First page retry
+            state.appendPage(items = listOf("", "", "", "", ""), nextPageKey = 2, isLastPage = false) // First page loaded
+            onNodeWithTag(LAZY_SCROLLABLE_TAG).performScrollToIndex(4) // scroll to next page causes request page 2
+            waitForIdle()
+
+            state.setError(Exception()) // Second page error
+            state.retryLastFailedRequest() // Second page retry
+            state.appendPage(items = listOf("", "", "", "", ""), nextPageKey = 3, isLastPage = true) // Second page loaded
+            waitForIdle()
+
+            assertThat(pageKeysCalled).isEqualTo(listOf(1, 1, 2, 2))
+        }
+
+    open fun invokingRetryOnLoadedStateCausesAnIllegalArgumentException() =
+        runComposeUiTest {
+            val pageKeysCalled = mutableListOf<Int>()
+
+            val state = defaultPaginationState { pageKeysCalled += it }
+
+            setContent { SutComposable(state) }
+
+            state.appendPage(items = listOf("", "", "", "", ""), nextPageKey = 2, isLastPage = false)
+
+            assertFailure { state.retryLastFailedRequest() }.isInstanceOf(IllegalArgumentException::class)
         }
 
     open fun retryNewPageFailedRequestWouldRequestAgainTheSamePageAndShowProgress() =
@@ -280,6 +352,4 @@ abstract class PaginatedLazyScrollableTest {
 
         assertThat(pageKeyCalled).isEqualTo(3)
     }
-
-
 }

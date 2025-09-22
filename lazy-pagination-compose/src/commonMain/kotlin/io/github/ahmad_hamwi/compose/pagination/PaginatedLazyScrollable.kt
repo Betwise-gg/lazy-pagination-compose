@@ -31,18 +31,11 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
     firstPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
     newPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
     firstPageEmptyIndicator: @Composable () -> Unit = {},
+    newPageEmptyIndicator: @Composable () -> Unit = {},
     state: LAZY_STATE,
     concreteLazyList: LazyScrollable<LAZY_SCROLLABLE_SCOPE>,
 ) {
     var internalState by paginationState.internalState
-
-    LaunchedEffect(internalState) {
-        (internalState as? PaginationInternalState.Loading)?.also {
-            paginationState.run {
-                onRequestPage.invoke(this, it.requestedPageKey)
-            }
-        }
-    }
 
     if (internalState is PaginationInternalState.Loading && internalState.items == null) {
         firstPageProgressIndicator()
@@ -99,7 +92,7 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
                     (internalState as? PaginationInternalState.IHasRequestedPageKey<KEY>)?.requestedPageKey
 
                 if (hasReachedLastItem && !isLastPage) {
-                    internalState = PaginationInternalState.Loading(
+                    paginationState.requestPage(
                         initialPageKey = internalState.initialPageKey,
                         requestedPageKey = newlyRequestedPageKey
                             ?: previouslyRequestedPageKey
@@ -144,6 +137,14 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
                     newPageErrorIndicator(internalStateRef.exception)
                 }
             }
+
+            if (internalStateRef is PaginationInternalState.Loaded && internalStateRef.isLastPage) {
+                item(
+                    LazyScrollableKeys.NEW_PAGE_EMPTY_INDICATOR_KEY
+                ) {
+                    newPageEmptyIndicator()
+                }
+            }
         }
     }
 
@@ -152,7 +153,7 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
             val requestedPageKey =
                 (internalState as? PaginationInternalState.IHasRequestedPageKey<KEY>)?.requestedPageKey
 
-            internalState = PaginationInternalState.Loading(
+            paginationState.requestPage(
                 initialPageKey = internalState.initialPageKey,
                 requestedPageKey = requestedPageKey ?: internalState.initialPageKey,
                 items = internalState.items
